@@ -4,10 +4,13 @@ WORKDIR /app
 COPY Cargo.toml ./
 COPY src ./src
 
-RUN cargo build --release
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo build --release && \
+    cp target/release/hello_world /usr/local/bin/hello_world
 
 FROM debian:bookworm-slim
 
-COPY --from=builder /app/target/release/hello_world /usr/local/bin/hello_world
+COPY --from=builder /usr/local/bin/hello_world /usr/local/bin/hello_world
 
 CMD ["hello_world"]
